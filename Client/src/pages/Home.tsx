@@ -3,32 +3,72 @@ import { Link } from 'react-router-dom';
 import { useSpring, animated } from '@react-spring/web';
 
 // Custom hook for animations
-const useAnimations = (count: number, delay: number = 200) => {
+const useAnimations = () => {
   const fadeIn = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
-    delay: delay,
+    delay: 200,
   });
 
   const slideUp = useSpring({
     from: { transform: 'translateY(20px)', opacity: 0 },
     to: { transform: 'translateY(0)', opacity: 1 },
-    delay: delay * 2,
+    delay: 400,
   });
 
-  const animations = Array(count).fill(null).map((_, index) =>
-    useSpring({
-      from: { opacity: 0, transform: 'translateY(20px)' },
-      to: { opacity: 1, transform: 'translateY(0)' },
-      delay: delay * index,
-    })
-  );
+  // Create individual animations for features
+  const featureAnimation1 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 200,
+  });
 
-  return { fadeIn, slideUp, animations };
+  const featureAnimation2 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 400,
+  });
+
+  const featureAnimation3 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 600,
+  });
+
+  const featureAnimation4 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 800,
+  });
+
+  const featureAnimation5 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 1000,
+  });
+
+  const featureAnimation6 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 1200,
+  });
+
+  return {
+    fadeIn,
+    slideUp,
+    featureAnimations: [
+      featureAnimation1,
+      featureAnimation2,
+      featureAnimation3,
+      featureAnimation4,
+      featureAnimation5,
+      featureAnimation6,
+    ],
+  };
 };
 
 const Home: React.FC = () => {
-  const { fadeIn, slideUp, animations: featureAnimations } = useAnimations(6);
+  const { fadeIn, slideUp, featureAnimations } = useAnimations();
 
   return (
     <div className="space-y-16">

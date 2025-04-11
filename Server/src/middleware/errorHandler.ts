@@ -1,22 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
+import { AppError } from '../utils/appError';
 import { logger } from '../utils/logger';
-
-interface ErrorResponse {
-  status: number;
-  message: string;
-  errors?: any[];
-}
-
-export class AppError extends Error {
-  status: number;
-  errors?: any[];
-
-  constructor(status: number, message: string, errors?: any[]) {
-    super(message);
-    this.status = status;
-    this.errors = errors;
-  }
-}
 
 export const errorHandler = (
   err: Error | AppError,
@@ -24,51 +8,29 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  logger.error('Error:', err);
+  // Default error status and message
+  let statusCode = 500;
+  let status = 'error';
+  let message = err.message || 'Internal server error';
+  let stack = process.env.NODE_ENV === 'development' ? err.stack : undefined;
 
+  // If it's our custom AppError, use its properties
   if (err instanceof AppError) {
-    return res.status(err.status).json({
-      status: 'error',
-      message: err.message,
-      errors: err.errors,
-    });
+    statusCode = err.statusCode;
+    status = err.status;
+    message = err.message;
   }
 
-  // Handle mongoose validation errors
-  if (err.name === 'ValidationError') {
-    return res.status(400).json({
-      status: 'error',
-      message: 'Validation Error',
-      errors: Object.values((err as any).errors).map((e: any) => e.message),
-    });
+  // Log error
+  logger.error(`Error: ${message}`);
+  if (stack) {
+    logger.error(`Stack: ${stack}`);
   }
 
-  // Handle mongoose duplicate key errors
-  if ((err as any).code === 11000) {
-    return res.status(400).json({
-      status: 'error',
-      message: 'Duplicate field value entered',
-    });
-  }
-
-  // Handle JWT errors
-  if (err.name === 'JsonWebTokenError') {
-    return res.status(401).json({
-      status: 'error',
-      message: 'Invalid token. Please log in again.',
-    });
-  }
-
-  if (err.name === 'TokenExpiredError') {
-    return res.status(401).json({
-      status: 'error',
-      message: 'Your token has expired. Please log in again.',
-    });
-  }
-
-  // Default error
-  return res.status(500).json({
-    status: 'error',
-    message: 'Something went wrong',
+  // Send error response
+  res.status(statusCode).json({
+    status,
+    message,
+    ...(process.env.NODE_ENV === 'development' && { stack })
   });
 }; 

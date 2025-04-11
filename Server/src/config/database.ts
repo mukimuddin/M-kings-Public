@@ -3,11 +3,19 @@ import { logger } from '../utils/logger';
 
 const connectDB = async (): Promise<void> => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI!);
-    logger.info(`MongoDB Connected: ${conn.connection.host}`);
+    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/m-kings';
+    
+    const options = {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    } as mongoose.ConnectOptions;
+    
+    await mongoose.connect(mongoURI, options);
+    
+    logger.info('MongoDB connected successfully');
   } catch (error) {
-    logger.error(`Error connecting to MongoDB: ${error}`);
-    process.exit(1);
+    logger.error('MongoDB connection error:', error);
+    throw error;
   }
 };
 

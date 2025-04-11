@@ -8,10 +8,11 @@ import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/email';
 
 const signToken = (id: string): string => {
   const secret = process.env.JWT_SECRET || 'default-secret';
+  // Convert string format to seconds if needed
   const expiresIn = process.env.JWT_EXPIRES_IN || '90d';
   
   const options: SignOptions = {
-    expiresIn: expiresIn
+    expiresIn: expiresIn as jwt.SignOptions['expiresIn']
   };
   
   return jwt.sign({ id }, secret, options);

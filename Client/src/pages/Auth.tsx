@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { loginStart, loginSuccess, loginFailure } from '../store/slices/authSlice';
 import { useSpring, animated } from '@react-spring/web';
+import axios from 'axios';
 
 const Auth: React.FC = () => {
   const navigate = useNavigate();
@@ -34,17 +35,26 @@ const Auth: React.FC = () => {
     dispatch(loginStart());
 
     try {
-      // TODO: Implement actual authentication logic with Firebase
-      const mockUser = {
-        id: '1',
-        email: formData.email,
-        name: formData.name || 'User',
-      };
-
-      dispatch(loginSuccess(mockUser));
-      navigate(location.state?.from || '/dashboard');
-    } catch (err) {
-      dispatch(loginFailure('Authentication failed. Please try again.'));
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
+      const response = await axios.post(endpoint, formData);
+      
+      if (response.data.status === 'success') {
+        const { token, data } = response.data;
+        
+        // Store token in localStorage
+        localStorage.setItem('token', token);
+        
+        // Update Redux state
+        dispatch(loginSuccess(data.user));
+        
+        // Redirect to dashboard or previous page
+        navigate(location.state?.from || '/dashboard');
+      } else {
+        dispatch(loginFailure(response.data.message || 'Authentication failed'));
+      }
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Authentication failed. Please try again.';
+      dispatch(loginFailure(errorMessage));
     }
   };
 
@@ -102,7 +112,7 @@ const Auth: React.FC = () => {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete={isLogin ? 'current-password' : 'new-password'}
                 required
                 className="input"
                 placeholder="Password"
@@ -119,10 +129,10 @@ const Auth: React.FC = () => {
           <div>
             <button
               type="submit"
-              disabled={loading}
               className="btn btn-primary w-full"
+              disabled={loading}
             >
-              {loading ? 'Loading...' : isLogin ? 'Sign in' : 'Sign up'}
+              {loading ? 'Processing...' : isLogin ? 'Sign in' : 'Sign up'}
             </button>
           </div>
         </form>

@@ -2,7 +2,7 @@ import React from 'react';
 import { useSpring, animated } from '@react-spring/web';
 
 // Custom hook for animations
-const useAnimations = (count: number, delay: number = 200) => {
+const useAnimations = () => {
   const fadeIn = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
@@ -11,23 +11,82 @@ const useAnimations = (count: number, delay: number = 200) => {
   const slideUp = useSpring({
     from: { transform: 'translateY(20px)', opacity: 0 },
     to: { transform: 'translateY(0)', opacity: 1 },
-    delay: delay,
+    delay: 200,
   });
 
-  const animations = Array(count).fill(null).map((_, index) => 
-    useSpring({
-      from: { opacity: 0, transform: 'translateY(20px)' },
-      to: { opacity: 1, transform: 'translateY(0)' },
-      delay: delay * index,
-    })
-  );
+  // Create individual animations for team members
+  const teamAnimation1 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 200,
+  });
 
-  return { fadeIn, slideUp, animations };
+  const teamAnimation2 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 400,
+  });
+
+  const teamAnimation3 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 600,
+  });
+
+  const teamAnimation4 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 800,
+  });
+
+  const teamAnimation5 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 1000,
+  });
+
+  const teamAnimation6 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 1200,
+  });
+
+  // Create individual animations for values
+  const valueAnimation1 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 200,
+  });
+
+  const valueAnimation2 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 400,
+  });
+
+  const valueAnimation3 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 600,
+  });
+
+  return {
+    fadeIn,
+    slideUp,
+    teamAnimations: [
+      teamAnimation1,
+      teamAnimation2,
+      teamAnimation3,
+      teamAnimation4,
+      teamAnimation5,
+      teamAnimation6,
+    ],
+    valueAnimations: [valueAnimation1, valueAnimation2, valueAnimation3],
+  };
 };
 
 const About: React.FC = () => {
-  const { fadeIn, slideUp, animations: teamAnimations } = useAnimations(6);
-  const { animations: valuesAnimations } = useAnimations(3);
+  const { fadeIn, slideUp, teamAnimations, valueAnimations } = useAnimations();
 
   return (
     <div className="space-y-16">
@@ -146,7 +205,7 @@ const About: React.FC = () => {
             ].map((value, index) => (
               <animated.div
                 key={index}
-                style={valuesAnimations[index]}
+                style={valueAnimations[index]}
                 className="card text-center"
               >
                 <div className="text-4xl mb-4">{value.icon}</div>

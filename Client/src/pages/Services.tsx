@@ -2,7 +2,7 @@ import React from 'react';
 import { useSpring, animated } from '@react-spring/web';
 
 // Custom hook for animations
-const useAnimations = (count: number, delay: number = 200) => {
+const useAnimations = () => {
   const fadeIn = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
@@ -11,23 +11,82 @@ const useAnimations = (count: number, delay: number = 200) => {
   const slideUp = useSpring({
     from: { transform: 'translateY(20px)', opacity: 0 },
     to: { transform: 'translateY(0)', opacity: 1 },
-    delay: delay,
+    delay: 200,
   });
 
-  const animations = Array(count).fill(null).map((_, index) =>
-    useSpring({
-      from: { opacity: 0, transform: 'translateY(20px)' },
-      to: { opacity: 1, transform: 'translateY(0)' },
-      delay: delay * index,
-    })
-  );
+  // Create individual animations for services
+  const serviceAnimation1 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 200,
+  });
 
-  return { fadeIn, slideUp, animations };
+  const serviceAnimation2 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 400,
+  });
+
+  const serviceAnimation3 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 600,
+  });
+
+  const serviceAnimation4 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 800,
+  });
+
+  const serviceAnimation5 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 1000,
+  });
+
+  const serviceAnimation6 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 1200,
+  });
+
+  // Create individual animations for pricing plans
+  const pricingAnimation1 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 200,
+  });
+
+  const pricingAnimation2 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 400,
+  });
+
+  const pricingAnimation3 = useSpring({
+    from: { opacity: 0, transform: 'translateY(20px)' },
+    to: { opacity: 1, transform: 'translateY(0)' },
+    delay: 600,
+  });
+
+  return {
+    fadeIn,
+    slideUp,
+    serviceAnimations: [
+      serviceAnimation1,
+      serviceAnimation2,
+      serviceAnimation3,
+      serviceAnimation4,
+      serviceAnimation5,
+      serviceAnimation6,
+    ],
+    pricingAnimations: [pricingAnimation1, pricingAnimation2, pricingAnimation3],
+  };
 };
 
 const Services: React.FC = () => {
-  const { fadeIn, slideUp, animations: serviceAnimations } = useAnimations(6);
-  const { animations: pricingAnimations } = useAnimations(3);
+  const { fadeIn, slideUp, serviceAnimations, pricingAnimations } = useAnimations();
 
   return (
     <div className="space-y-16">

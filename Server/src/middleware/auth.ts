@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { User } from '../models/userModel';
+import { User, IUser } from '../models/userModel';
 import { AppError } from '../utils/appError';
+import { logger } from '../utils/logger';
 
 interface JwtPayload {
   id: string;
@@ -12,7 +13,7 @@ interface JwtPayload {
 declare global {
   namespace Express {
     interface Request {
-      user?: any;
+      user?: IUser;
     }
   }
 }
@@ -36,23 +37,42 @@ export const protect = async (
       return next(new AppError('You are not logged in', 401));
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string };
+    // Verify token
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      logger.error('JWT_SECRET is not defined in environment variables');
+      return next(new AppError('Authentication error', 500));
+    }
 
+    const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
+
+    // Check if user still exists
     const user = await User.findById(decoded.id);
-
     if (!user) {
       return next(new AppError('User no longer exists', 401));
     }
 
+    // Add user to request object
     req.user = user;
     next();
   } catch (error) {
-    return next(new AppError('Invalid token', 401));
+    if (error instanceof jwt.JsonWebTokenError) {
+      return next(new AppError('Invalid token', 401));
+    }
+    if (error instanceof jwt.TokenExpiredError) {
+      return next(new AppError('Token expired', 401));
+    }
+    logger.error(`Auth middleware error: ${error}`);
+    return next(new AppError('Authentication error', 401));
   }
 };
 
 export const restrictTo = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return next(new AppError('You are not logged in', 401));
+    }
+    
     if (!roles.includes(req.user.role)) {
       return next(
         new AppError('You do not have permission to perform this action', 403)
