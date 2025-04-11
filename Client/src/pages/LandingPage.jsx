@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 
 const LandingPage = () => {
@@ -36,14 +37,16 @@ const LandingPage = () => {
             through cutting-edge technology and innovative solutions.
           </motion.p>
 
-          <motion.button
-            className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold flex items-center gap-2 mx-auto hover:bg-blue-700 transition-colors"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Explore Services
-            <ArrowRight className="w-5 h-5" />
-          </motion.button>
+          <Link to="/services">
+            <motion.button
+              className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold flex items-center gap-2 mx-auto hover:bg-blue-700 transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Explore Services
+              <ArrowRight className="w-5 h-5" />
+            </motion.button>
+          </Link>
         </div>
       </div>
     </div>
