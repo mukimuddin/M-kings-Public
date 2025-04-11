@@ -9,7 +9,7 @@ const About = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 py-20">
+    <section id="about" className="bg-gray-900 py-16">
       <div className="container mx-auto px-4">
         <motion.h2
           className="text-4xl font-bold text-white text-center mb-12"
@@ -20,12 +20,14 @@ const About = () => {
           About Us
         </motion.h2>
         <motion.p
-          className="text-xl text-gray-300 text-center mb-16"
+          className="text-xl text-gray-300 text-center mb-16 max-w-3xl mx-auto"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 1 }}
         >
-          Welcome to M Kings Group & Company, where innovation meets excellence. We are dedicated to providing top-notch services across various industries.
+          Welcome to M Kings Group & Company, where innovation meets excellence. 
+          We are dedicated to providing top-notch services across various industries, 
+          leveraging cutting-edge technology and expertise to deliver exceptional results.
         </motion.p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {coreValues.map((value, index) => (
@@ -43,7 +45,7 @@ const About = () => {
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
