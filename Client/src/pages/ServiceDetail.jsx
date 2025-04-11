@@ -338,187 +338,186 @@ const ServiceDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      {/* Back Button */}
-      <div className="container mx-auto px-4 py-6 relative md:static z-[60]">
-        <Link
+    <div className="min-h-screen bg-gray-900 pt-24 pb-16">
+      <div className="container mx-auto px-4">
+        <Link 
           to="/services"
-          className="inline-flex items-center text-gray-400 hover:text-white transition-colors"
+          className="inline-flex items-center text-blue-400 hover:text-blue-300 mb-8 group"
         >
-          <ArrowLeft className="w-5 h-5 mr-2" />
+          <ArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" size={20} />
           Back to Services
         </Link>
-      </div>
 
-      {/* Banner Section */}
-      <div className="relative bg-gray-800 overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src={service.image}
-            alt={service.title}
-            className="w-full h-full object-cover opacity-20"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/95 to-gray-900/70"></div>
+        {/* Banner Section */}
+        <div className="relative bg-gray-800 overflow-hidden">
+          <div className="absolute inset-0">
+            <img
+              src={service.image}
+              alt={service.title}
+              className="w-full h-full object-cover opacity-20"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/95 to-gray-900/70"></div>
+          </div>
+          <div className="relative container mx-auto px-4 py-16 md:py-24">
+            <motion.h1
+              className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 break-words"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              {service.title}
+            </motion.h1>
+            <motion.p
+              className="text-xl text-gray-300 max-w-2xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+            >
+              {service.description}
+            </motion.p>
+          </div>
         </div>
-        <div className="relative container mx-auto px-4 py-16 md:py-24">
-          <motion.h1
-            className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 break-words"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            {service.title}
-          </motion.h1>
-          <motion.p
-            className="text-xl text-gray-300 max-w-2xl"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            {service.description}
-          </motion.p>
-        </div>
-      </div>
 
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="lg:col-span-2 space-y-8"
-          >
-            {/* Overview */}
-            <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm border border-gray-700">
-              <h2 className="text-2xl font-bold text-white mb-4">Overview</h2>
-              <p className="text-gray-300 text-lg leading-relaxed">{service.fullDescription}</p>
-            </div>
-
-            {/* Features */}
-            <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm border border-gray-700">
-              <h2 className="text-2xl font-bold text-white mb-6">Key Features</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {service.features.map((feature, index) => (
-                  <div key={index} className="flex items-start space-x-4">
-                    <div className="text-blue-400 mt-1">
-                      {feature.icon}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
-                      <p className="text-gray-300">{feature.description}</p>
-                    </div>
-                  </div>
-                ))}
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="lg:col-span-2 space-y-8"
+            >
+              {/* Overview */}
+              <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm border border-gray-700">
+                <h2 className="text-2xl font-bold text-white mb-4">Overview</h2>
+                <p className="text-gray-300 text-lg leading-relaxed">{service.fullDescription}</p>
               </div>
-            </div>
 
-            {/* Benefits */}
-            <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm border border-gray-700">
-              <h2 className="text-2xl font-bold text-white mb-6">Benefits</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {service.benefits.map((benefit, index) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mt-1">
-                      <span className="text-blue-400 font-semibold">✓</span>
+              {/* Features */}
+              <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm border border-gray-700">
+                <h2 className="text-2xl font-bold text-white mb-6">Key Features</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {service.features.map((feature, index) => (
+                    <div key={index} className="flex items-start space-x-4">
+                      <div className="text-blue-400 mt-1">
+                        {feature.icon}
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
+                        <p className="text-gray-300">{feature.description}</p>
+                      </div>
                     </div>
-                    <span className="text-gray-300 text-lg">{benefit}</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Case Studies */}
-            <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm border border-gray-700">
-              <h2 className="text-2xl font-bold text-white mb-6">Case Studies</h2>
-              <div className="space-y-6">
-                {service.caseStudies.map((study, index) => (
-                  <div key={index} className="bg-gray-700/50 rounded-lg p-6">
-                    <h3 className="text-xl font-bold text-white mb-2">{study.title}</h3>
-                    <p className="text-gray-300 mb-3">{study.description}</p>
-                    <div className="flex items-center text-blue-400 mb-3">
-                      <TrendingUp className="mr-2" size={20} />
-                      <span className="font-medium">Impact: {study.impact}</span>
+              {/* Benefits */}
+              <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm border border-gray-700">
+                <h2 className="text-2xl font-bold text-white mb-6">Benefits</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {service.benefits.map((benefit, index) => (
+                    <div key={index} className="flex items-start space-x-3">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mt-1">
+                        <span className="text-blue-400 font-semibold">✓</span>
+                      </div>
+                      <span className="text-gray-300 text-lg">{benefit}</span>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {(study.technologies || study.services).map((item, i) => (
-                        <span key={i} className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-sm">
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          </motion.div>
 
-          {/* Sidebar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="space-y-6"
-          >
-            {/* Process */}
-            <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm border border-gray-700">
-              <h2 className="text-2xl font-bold text-white mb-6">Our Process</h2>
-              <div className="space-y-4">
-                {service.process.map((step, index) => (
-                  <div key={index} className="flex items-center space-x-3">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                      <span className="text-blue-400 font-semibold">{index + 1}</span>
+              {/* Case Studies */}
+              <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm border border-gray-700">
+                <h2 className="text-2xl font-bold text-white mb-6">Case Studies</h2>
+                <div className="space-y-6">
+                  {service.caseStudies.map((study, index) => (
+                    <div key={index} className="bg-gray-700/50 rounded-lg p-6">
+                      <h3 className="text-xl font-bold text-white mb-2">{study.title}</h3>
+                      <p className="text-gray-300 mb-3">{study.description}</p>
+                      <div className="flex items-center text-blue-400 mb-3">
+                        <TrendingUp className="mr-2" size={20} />
+                        <span className="font-medium">Impact: {study.impact}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {(study.technologies || study.services).map((item, i) => (
+                          <span key={i} className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-sm">
+                            {item}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                    <span className="text-gray-300 text-lg">{step}</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Stats */}
-            <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm border border-gray-700">
-              <h2 className="text-2xl font-bold text-white mb-6">Key Statistics</h2>
-              <div className="space-y-4">
-                {service.stats.map((stat, index) => (
-                  <div key={index} className="flex items-center space-x-4">
-                    <div className="text-blue-400">
-                      {stat.icon}
+            {/* Sidebar */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="space-y-6"
+            >
+              {/* Process */}
+              <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm border border-gray-700">
+                <h2 className="text-2xl font-bold text-white mb-6">Our Process</h2>
+                <div className="space-y-4">
+                  {service.process.map((step, index) => (
+                    <div key={index} className="flex items-center space-x-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                        <span className="text-blue-400 font-semibold">{index + 1}</span>
+                      </div>
+                      <span className="text-gray-300 text-lg">{step}</span>
                     </div>
-                    <div>
-                      <p className="text-gray-300">{stat.label}</p>
-                      <p className="text-2xl font-bold text-white">{stat.value}</p>
+                  ))}
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm border border-gray-700">
+                <h2 className="text-2xl font-bold text-white mb-6">Key Statistics</h2>
+                <div className="space-y-4">
+                  {service.stats.map((stat, index) => (
+                    <div key={index} className="flex items-center space-x-4">
+                      <div className="text-blue-400">
+                        {stat.icon}
+                      </div>
+                      <div>
+                        <p className="text-gray-300">{stat.label}</p>
+                        <p className="text-2xl font-bold text-white">{stat.value}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Technologies/Services */}
-            <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm border border-gray-700">
-              <h2 className="text-2xl font-bold text-white mb-6">
-                {service.technologies ? 'Technologies' : 'Services'}
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {(service.technologies || service.services).map((item, index) => (
-                  <span key={index} className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-sm">
-                    {item}
-                  </span>
-                ))}
+              {/* Technologies/Services */}
+              <div className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm border border-gray-700">
+                <h2 className="text-2xl font-bold text-white mb-6">
+                  {service.technologies ? 'Technologies' : 'Services'}
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {(service.technologies || service.services).map((item, index) => (
+                    <span key={index} className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-sm">
+                      {item}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* CTA */}
-            <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-6 text-center">
-              <h3 className="text-xl font-bold text-white mb-4">Ready to Get Started?</h3>
-              <p className="text-gray-200 mb-6">Let's discuss how we can help transform your business.</p>
-              <Link
-                to="/contact"
-                className="inline-block bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-              >
-                Contact Us
-              </Link>
-            </div>
-          </motion.div>
+              {/* CTA */}
+              <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-6 text-center">
+                <h3 className="text-xl font-bold text-white mb-4">Ready to Get Started?</h3>
+                <p className="text-gray-200 mb-6">Let's discuss how we can help transform your business.</p>
+                <Link
+                  to="/contact"
+                  className="inline-block bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                >
+                  Contact Us
+                </Link>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
     </div>
