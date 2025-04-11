@@ -131,7 +131,7 @@ const Navbar = () => {
             {/* Logo */}
             <Link to="/" onClick={handleNavClick}>
               <motion.div
-                className="text-2xl font-bold text-white flex items-center"
+                className="text-2xl font-bold text-white flex items-center relative z-10 bg-gray-900 px-2 py-1 rounded"
                 whileHover={{ scale: 1.05 }}
               >
                 <span className="text-blue-400">M</span> Kings Group
