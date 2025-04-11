@@ -1,201 +1,180 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt, { SignOptions } from 'jsonwebtoken';
-import crypto from 'crypto';
+import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import { User } from '../models/userModel';
+import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/emailService';
+import { generateVerificationEmail, generatePasswordResetEmail } from '../utils/emailTemplates';
 import { AppError } from '../utils/appError';
-import { logger } from '../utils/logger';
-import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/email';
+import { catchAsync } from '../utils/catchAsync';
 
 const signToken = (id: string): string => {
-  const secret = process.env.JWT_SECRET || 'default-secret';
-  // Convert string format to seconds if needed
-  const expiresIn = process.env.JWT_EXPIRES_IN || '90d';
-  
-  const options: SignOptions = {
-    expiresIn: expiresIn as jwt.SignOptions['expiresIn']
-  };
-  
-  return jwt.sign({ id }, secret, options);
+  return jwt.sign({ id }, process.env.JWT_SECRET!, {
+    expiresIn: process.env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'],
+  });
 };
 
-export const signup = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { name, email, password } = req.body;
+export const signup = catchAsync(async (req: Request, res: Response) => {
+  const { name, email, password } = req.body;
 
-    // Generate verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  // Check if user already exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw new AppError('Email already in use', 400);
+  }
 
-    const user = await User.create({
-      name,
-      email,
-      password,
-      emailVerificationToken: verificationToken,
-      emailVerificationExpires: verificationExpires,
-    });
+  // Create verification token
+  const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET!, {
+    expiresIn: '24h',
+  });
 
-    // Send verification email
-    await sendVerificationEmail(email, verificationToken);
+  // Create user
+  const user = await User.create({
+    name,
+    email,
+    password,
+    verificationToken,
+    verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+  });
 
-    const token = signToken(user._id);
+  // Send verification email
+  const verificationUrl = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
+  await sendVerificationEmail(user.email, user.name, verificationUrl);
 
-    res.status(201).json({
-      status: 'success',
-      token,
-      data: {
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          isEmailVerified: user.isEmailVerified,
-        },
+  // Generate token
+  const token = signToken(user._id);
+
+  res.status(201).json({
+    status: 'success',
+    token,
+    data: {
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
       },
-    });
-  } catch (error: any) {
-    if (error.code === 11000) {
-      return next(new AppError('Email already exists', 400));
-    }
-    next(error);
+    },
+  });
+});
+
+export const login = catchAsync(async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  // Check if email and password exist
+  if (!email || !password) {
+    throw new AppError('Please provide email and password', 400);
   }
-};
 
-export const login = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { email, password } = req.body;
+  // Check if user exists && password is correct
+  const user = await User.findOne({ email }).select('+password');
+  if (!user || !(await user.comparePassword(password))) {
+    throw new AppError('Incorrect email or password', 401);
+  }
 
-    if (!email || !password) {
-      return next(new AppError('Please provide email and password', 400));
-    }
+  // Check if email is verified
+  if (!user.isEmailVerified) {
+    throw new AppError('Please verify your email first', 401);
+  }
 
-    const user = await User.findOne({ email }).select('+password');
+  // Generate token
+  const token = signToken(user._id);
 
-    if (!user || !(await user.comparePassword(password))) {
-      return next(new AppError('Incorrect email or password', 401));
-    }
-
-    if (!user.isEmailVerified) {
-      return next(new AppError('Please verify your email first', 401));
-    }
-
-    const token = signToken(user._id);
-
-    res.status(200).json({
-      status: 'success',
-      token,
-      data: {
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          isEmailVerified: user.isEmailVerified,
-        },
+  res.status(200).json({
+    status: 'success',
+    token,
+    data: {
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
       },
-    });
-  } catch (error) {
-    next(error);
+    },
+  });
+});
+
+export const verifyEmail = catchAsync(async (req: Request, res: Response) => {
+  const { token } = req.body;
+
+  // Find user with valid verification token
+  const user = await User.findOne({
+    verificationToken: token,
+    verificationTokenExpiry: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    throw new AppError('Invalid or expired verification token', 400);
   }
-};
 
-export const verifyEmail = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { token } = req.params;
+  // Update user
+  user.isEmailVerified = true;
+  user.verificationToken = undefined;
+  user.verificationTokenExpiry = undefined;
+  await user.save();
 
-    const user = await User.findOne({
-      emailVerificationToken: token,
-      emailVerificationExpires: { $gt: Date.now() },
-    });
+  // Send welcome email using verification email function with a custom message
+  const welcomeUrl = `${process.env.CLIENT_URL}/login`;
+  await sendVerificationEmail(user.email, user.name, welcomeUrl);
 
-    if (!user) {
-      return next(new AppError('Invalid or expired verification token', 400));
-    }
+  res.status(200).json({
+    status: 'success',
+    message: 'Email verified successfully',
+  });
+});
 
-    user.isEmailVerified = true;
-    user.emailVerificationToken = undefined;
-    user.emailVerificationExpires = undefined;
-    await user.save();
+export const forgotPassword = catchAsync(async (req: Request, res: Response) => {
+  const { email } = req.body;
 
-    res.status(200).json({
-      status: 'success',
-      message: 'Email verified successfully',
-    });
-  } catch (error) {
-    next(error);
+  // Get user based on email
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new AppError('User not found', 404);
   }
-};
 
-export const forgotPassword = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { email } = req.body;
+  // Generate reset token
+  const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, {
+    expiresIn: '1h',
+  });
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return next(new AppError('No user found with this email', 404));
-    }
+  // Save reset token to user
+  user.resetPasswordToken = resetToken;
+  user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+  await user.save();
 
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const resetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+  // Send reset email
+  const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
+  await sendPasswordResetEmail(user.email, user.name, resetUrl);
 
-    user.passwordResetToken = resetToken;
-    user.passwordResetExpires = resetExpires;
-    await user.save();
+  res.status(200).json({
+    status: 'success',
+    message: 'Password reset token sent to email',
+  });
+});
 
-    await sendPasswordResetEmail(email, resetToken);
+export const resetPassword = catchAsync(async (req: Request, res: Response) => {
+  const { token, password } = req.body;
 
-    res.status(200).json({
-      status: 'success',
-      message: 'Password reset email sent',
-    });
-  } catch (error) {
-    next(error);
+  // Find user with valid reset token
+  const user = await User.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    throw new AppError('Invalid or expired reset token', 400);
   }
-};
 
-export const resetPassword = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { token } = req.params;
-    const { password } = req.body;
+  // Update password
+  user.password = password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+  await user.save();
 
-    const user = await User.findOne({
-      passwordResetToken: token,
-      passwordResetExpires: { $gt: Date.now() },
-    });
+  // Send confirmation email using verification email function with a custom message
+  const loginUrl = `${process.env.CLIENT_URL}/login`;
+  await sendVerificationEmail(user.email, user.name, loginUrl);
 
-    if (!user) {
-      return next(new AppError('Invalid or expired reset token', 400));
-    }
-
-    user.password = password;
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
-    await user.save();
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Password reset successful',
-    });
-  } catch (error) {
-    next(error);
-  }
-}; 
+  res.status(200).json({
+    status: 'success',
+    message: 'Password reset successful',
+  });
+}); 

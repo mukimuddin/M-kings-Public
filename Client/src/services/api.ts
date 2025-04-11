@@ -1,18 +1,18 @@
 import axios from 'axios';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+import { store } from '../store';
+import { logout } from '../store/slices/authSlice';
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Add a request interceptor to add the auth token to requests
+// Add token to requests
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = store.getState().auth.token;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -23,38 +23,60 @@ api.interceptors.request.use(
   }
 );
 
-// Add a response interceptor to handle token expiration
+// Handle response errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/auth';
+      store.dispatch(logout());
     }
     return Promise.reject(error);
   }
 );
 
-export const authAPI = {
-  login: async (email: string, password: string) => {
-    const response = await api.post('/auth/login', { email, password });
-    return response.data;
-  },
+export const authApi = {
+  login: (credentials: { email: string; password: string }) =>
+    api.post('/api/auth/login', credentials),
+  
+  signup: (userData: { name: string; email: string; password: string }) =>
+    api.post('/api/auth/signup', userData),
+  
+  verifyEmail: (token: string) =>
+    api.post('/api/auth/verify-email', { token }),
+  
+  forgotPassword: (email: string) =>
+    api.post('/api/auth/forgot-password', { email }),
+  
+  resetPassword: (token: string, password: string) =>
+    api.post('/api/auth/reset-password', { token, password }),
+  
+  logout: () =>
+    api.post('/api/auth/logout'),
+};
 
-  signup: async (name: string, email: string, password: string) => {
-    const response = await api.post('/auth/signup', { name, email, password });
-    return response.data;
-  },
+export const userApi = {
+  getProfile: () =>
+    api.get('/api/users/profile'),
+  
+  updateProfile: (data: { name?: string; email?: string }) =>
+    api.patch('/api/users/profile', data),
+  
+  changePassword: (data: { currentPassword: string; newPassword: string }) =>
+    api.patch('/api/users/change-password', data),
+};
 
-  logout: async () => {
-    const response = await api.post('/auth/logout');
-    return response.data;
-  },
-
-  getMe: async () => {
-    const response = await api.get('/auth/me');
-    return response.data;
-  },
+export const chatApi = {
+  getRooms: () =>
+    api.get('/api/chat/rooms'),
+  
+  createRoom: (data: { name: string; participants: string[] }) =>
+    api.post('/api/chat/rooms', data),
+  
+  getMessages: (roomId: string) =>
+    api.get(`/api/chat/rooms/${roomId}/messages`),
+  
+  sendMessage: (roomId: string, content: string) =>
+    api.post(`/api/chat/rooms/${roomId}/messages`, { content }),
 };
 
 export default api; 

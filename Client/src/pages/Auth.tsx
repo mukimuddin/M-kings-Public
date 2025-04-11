@@ -1,21 +1,17 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../store';
-import { loginStart, loginSuccess, loginFailure } from '../store/slices/authSlice';
+import { useAuth } from '../hooks/useAuth';
 import { useSpring, animated } from '@react-spring/web';
-import axios from 'axios';
 
-const Auth: React.FC = () => {
+export const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const dispatch = useDispatch();
-  const { loading, error } = useSelector((state: RootState) => state.auth);
+  const { login, signup, loading, error, clearError } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
     password: '',
-    name: '',
   });
 
   const fadeIn = useSpring({
@@ -28,44 +24,32 @@ const Auth: React.FC = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
+    if (error) clearError();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(loginStart());
 
     try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
-      const response = await axios.post(endpoint, formData);
-      
-      if (response.data.status === 'success') {
-        const { token, data } = response.data;
-        
-        // Store token in localStorage
-        localStorage.setItem('token', token);
-        
-        // Update Redux state
-        dispatch(loginSuccess(data.user));
-        
-        // Redirect to dashboard or previous page
-        navigate(location.state?.from || '/dashboard');
+      if (isLogin) {
+        await login(formData.email, formData.password);
       } else {
-        dispatch(loginFailure(response.data.message || 'Authentication failed'));
+        await signup(formData.name, formData.email, formData.password);
       }
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Authentication failed. Please try again.';
-      dispatch(loginFailure(errorMessage));
+      navigate(location.state?.from || '/dashboard');
+    } catch (err) {
+      // Error is handled by the auth hook
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
       <animated.div
         style={fadeIn}
-        className="max-w-md w-full space-y-8"
+        className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg"
       >
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
             {isLogin ? 'Sign in to your account' : 'Create a new account'}
           </h2>
         </div>
@@ -81,7 +65,7 @@ const Auth: React.FC = () => {
                   name="name"
                   type="text"
                   required
-                  className="input"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm dark:bg-gray-700"
                   placeholder="Full Name"
                   value={formData.name}
                   onChange={handleChange}
@@ -98,7 +82,7 @@ const Auth: React.FC = () => {
                 type="email"
                 autoComplete="email"
                 required
-                className="input"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm dark:bg-gray-700"
                 placeholder="Email address"
                 value={formData.email}
                 onChange={handleChange}
@@ -114,7 +98,7 @@ const Auth: React.FC = () => {
                 type="password"
                 autoComplete={isLogin ? 'current-password' : 'new-password'}
                 required
-                className="input"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm dark:bg-gray-700"
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
@@ -129,7 +113,7 @@ const Auth: React.FC = () => {
           <div>
             <button
               type="submit"
-              className="btn btn-primary w-full"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
             >
               {loading ? 'Processing...' : isLogin ? 'Sign in' : 'Sign up'}
@@ -139,8 +123,11 @@ const Auth: React.FC = () => {
 
         <div className="text-center">
           <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-accent hover:text-accent-dark"
+            onClick={() => {
+              setIsLogin(!isLogin);
+              clearError();
+            }}
+            className="text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 text-sm font-medium"
           >
             {isLogin
               ? "Don't have an account? Sign up"
@@ -150,6 +137,4 @@ const Auth: React.FC = () => {
       </animated.div>
     </div>
   );
-};
-
-export default Auth; 
+}; 

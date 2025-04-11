@@ -1,41 +1,23 @@
 import { Router } from 'express';
-import { body } from 'express-validator';
+import { validateRequest } from '../middleware/validateRequest';
+import { authValidation } from '../validations/authValidation';
 import {
   signup,
   login,
   verifyEmail,
   forgotPassword,
   resetPassword,
+  logout
 } from '../controllers/authController';
-import { protect } from '../middleware/auth';
+import { protect } from '../middleware/authMiddleware';
 
 const router = Router();
 
-// Validation middleware
-const validateSignup = [
-  body('name').trim().notEmpty().withMessage('Name is required'),
-  body('email')
-    .trim()
-    .isEmail()
-    .withMessage('Please provide a valid email'),
-  body('password')
-    .isLength({ min: 8 })
-    .withMessage('Password must be at least 8 characters long'),
-];
-
-const validateLogin = [
-  body('email')
-    .trim()
-    .isEmail()
-    .withMessage('Please provide a valid email'),
-  body('password').notEmpty().withMessage('Password is required'),
-];
-
-// Routes
-router.post('/signup', validateSignup, signup);
-router.post('/login', validateLogin, login);
-router.get('/verify-email/:token', verifyEmail);
-router.post('/forgot-password', forgotPassword);
-router.post('/reset-password/:token', resetPassword);
+router.post('/signup', validateRequest(authValidation.signup), signup);
+router.post('/login', validateRequest(authValidation.login), login);
+router.post('/verify-email', validateRequest(authValidation.verifyEmail), verifyEmail);
+router.post('/forgot-password', validateRequest(authValidation.forgotPassword), forgotPassword);
+router.post('/reset-password', validateRequest(authValidation.resetPassword), resetPassword);
+router.post('/logout', protect, logout);
 
 export default router; 

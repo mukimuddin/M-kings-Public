@@ -1,83 +1,98 @@
 import express from 'express';
-import http from 'http';
 import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import mongoose from 'mongoose';
+import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
-import authRoutes from './routes/authRoutes';
-import connectDB from './config/database';
-import { errorHandler } from './middleware/errorHandler';
 import { logger } from './utils/logger';
-import { AppError } from './utils/appError';
+import { errorHandler } from './middleware/errorHandler';
+import { notFound } from './middleware/notFound';
+
+// Routes
+import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
+import chatRoutes from './routes/chatRoutes';
 
 // Load environment variables
 dotenv.config();
 
-// Validate required environment variables
-const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET'];
-const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
-
-if (missingEnvVars.length > 0) {
-  logger.error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
-  process.exit(1);
-}
-
-// Initialize Express app
+// Create Express app
 const app = express();
+const httpServer = createServer(app);
+
+// Socket.io setup
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.SOCKET_CORS_ORIGIN,
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
+});
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: Number(process.env.RATE_LIMIT_WINDOW) * 60 * 1000,
+  max: Number(process.env.RATE_LIMIT_MAX)
+});
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL,
+  credentials: true
+}));
+app.use(helmet());
+app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(limiter);
 
 // Routes
-app.get('/', (req, res) => {
-  res.status(200).json({ message: 'M Kings API is running' });
-});
-
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/chat', chatRoutes);
 
-// 404 handler
-app.use((req, res, next) => {
-  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
-});
-
-// Error handling middleware
+// Error handling
+app.use(notFound);
 app.use(errorHandler);
 
-// Create HTTP server
-const server: http.Server = http.createServer(app);
+// Socket.io connection handling
+io.on('connection', (socket) => {
+  logger.info(`User connected: ${socket.id}`);
 
-// Connect to database and start server
-const startServer = async () => {
-  try {
-    await connectDB();
-    const port = process.env.PORT || 3000;
-    server.listen(port, () => {
-      logger.info(`Server running on port ${port}`);
+  socket.on('join_room', (roomId) => {
+    socket.join(roomId);
+    logger.info(`User ${socket.id} joined room ${roomId}`);
+  });
+
+  socket.on('leave_room', (roomId) => {
+    socket.leave(roomId);
+    logger.info(`User ${socket.id} left room ${roomId}`);
+  });
+
+  socket.on('message', (data) => {
+    io.to(data.roomId).emit('message', data);
+  });
+
+  socket.on('disconnect', () => {
+    logger.info(`User disconnected: ${socket.id}`);
+  });
+});
+
+// Database connection
+mongoose.connect(process.env.MONGODB_URI!)
+  .then(() => {
+    logger.info('MongoDB Connected...');
+    
+    // Start server
+    const PORT = process.env.PORT || 5000;
+    httpServer.listen(PORT, () => {
+      logger.info(`Server running on port ${PORT}`);
     });
-
-    // Handle unhandled promise rejections
-    process.on('unhandledRejection', (err: Error) => {
-      logger.error(`UNHANDLED REJECTION! Shutting down...`);
-      logger.error(`${err.name}: ${err.message}`);
-      server.close(() => {
-        process.exit(1);
-      });
-    });
-
-    // Handle uncaught exceptions
-    process.on('uncaughtException', (err: Error) => {
-      logger.error(`UNCAUGHT EXCEPTION! Shutting down...`);
-      logger.error(`${err.name}: ${err.message}`);
-      process.exit(1);
-    });
-
-  } catch (error) {
-    logger.error('Failed to start server:', error);
+  })
+  .catch((err) => {
+    logger.error('MongoDB connection error:', err);
     process.exit(1);
-  }
-};
-
-startServer();
-
-// Export server for Socket.IO
-export { server }; 
+  }); 

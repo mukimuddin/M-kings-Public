@@ -5,12 +5,12 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 const authAPI = {
   signup: async (userData: { name: string; email: string; password: string }) => {
     const response = await axios.post(`${API_URL}/auth/signup`, userData);
-    return response.data;
+    return response;
   },
 
   login: async (credentials: { email: string; password: string }) => {
     const response = await axios.post(`${API_URL}/auth/login`, credentials);
-    return response.data;
+    return response;
   },
 
   logout: async () => {
@@ -20,20 +20,17 @@ const authAPI = {
 
   verifyEmail: async (token: string) => {
     const response = await axios.post(`${API_URL}/auth/verify-email`, { token });
-    return response.data;
+    return response;
   },
 
   forgotPassword: async (email: string) => {
     const response = await axios.post(`${API_URL}/auth/forgot-password`, { email });
-    return response.data;
+    return response;
   },
 
-  resetPassword: async (token: string, newPassword: string) => {
-    const response = await axios.post(`${API_URL}/auth/reset-password`, {
-      token,
-      newPassword,
-    });
-    return response.data;
+  resetPassword: async (token: string, password: string) => {
+    const response = await axios.post(`${API_URL}/auth/reset-password`, { token, password });
+    return response;
   },
 };
 
