@@ -11,15 +11,38 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 0) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
+      // Only apply scroll effect on desktop (screen width > 768px)
+      if (window.innerWidth > 768) {
+        if (window.scrollY > 0) {
+          setIsScrolled(true);
+        } else {
+          setIsScrolled(false);
+        }
       }
     };
 
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    // Check initial screen size
+    if (window.innerWidth <= 768) {
+      setIsScrolled(false);
+    }
+
+    // Handle resize events
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        setIsScrolled(false);
+      } else {
+        handleScroll();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   useEffect(() => {
@@ -74,7 +97,7 @@ const Navbar = () => {
   ];
 
   return (
-    <div className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? '-translate-y-10' : ''}`}>
+    <div className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'md:-translate-y-10' : ''}`}>
       {/* Quick Contact Bar */}
       <motion.div
         className="bg-gray-800 text-gray-300 py-2 px-4 hidden md:block"
@@ -98,7 +121,7 @@ const Navbar = () => {
       <motion.nav
         className={`w-full transition-all duration-300 ${
           isScrolled ? 'bg-gray-900/95 backdrop-blur-sm shadow-lg' : 'bg-transparent'
-        }`}
+        } md:bg-transparent ${!isScrolled && isMenuOpen ? 'bg-gray-900/95' : ''}`}
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
