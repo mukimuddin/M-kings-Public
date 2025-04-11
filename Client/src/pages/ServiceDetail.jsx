@@ -340,7 +340,7 @@ const ServiceDetail = () => {
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Back Button */}
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6 relative md:static z-[60]">
         <Link
           to="/services"
           className="inline-flex items-center text-gray-400 hover:text-white transition-colors"
