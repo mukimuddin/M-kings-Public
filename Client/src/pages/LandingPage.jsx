@@ -5,6 +5,7 @@ import { ArrowRight, Award, Users, Globe, Zap, ChartBar, Check } from 'lucide-re
 import CountUp from 'react-countup';
 import ScrollReveal from '../components/ScrollReveal';
 import ParticlesBackground from '../components/ParticlesBackground';
+import ScrollIndicator from '../components/ScrollIndicator';
 
 const LandingPage = () => {
   const stats = [
@@ -24,19 +25,19 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <div className="relative min-h-screen bg-gray-900">
       {/* Hero Section */}
-      <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <div className="relative min-h-screen flex flex-col justify-center overflow-hidden">
         <ParticlesBackground />
         {/* Background Animation */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute w-96 h-96 bg-blue-500 rounded-full filter blur-3xl animate-blob"></div>
-          <div className="absolute w-96 h-96 bg-purple-500 rounded-full right-0 filter blur-3xl animate-blob animation-delay-2000"></div>
-          <div className="absolute w-96 h-96 bg-indigo-500 rounded-full bottom-0 filter blur-3xl animate-blob animation-delay-4000"></div>
+        <div className="absolute inset-0 opacity-20 overflow-hidden">
+          <div className="absolute w-96 h-96 left-0 top-0 bg-blue-500 rounded-full filter blur-3xl animate-blob"></div>
+          <div className="absolute w-96 h-96 right-0 top-0 bg-purple-500 rounded-full filter blur-3xl animate-blob animation-delay-2000"></div>
+          <div className="absolute w-96 h-96 left-1/2 bottom-0 -translate-x-1/2 bg-indigo-500 rounded-full filter blur-3xl animate-blob animation-delay-4000"></div>
         </div>
 
         {/* Content */}
-        <div className="container mx-auto px-4 z-10">
+        <div className="container relative mx-auto px-4 z-10">
           <div className="text-center">
             <motion.h1
               className="text-5xl md:text-7xl font-bold text-white mb-6"
@@ -78,7 +79,17 @@ const LandingPage = () => {
               <Link to="/contact">
                 <motion.button
                   className="bg-transparent border-2 border-blue-400 text-blue-400 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-400/10 transition-colors"
-                  whileHover={{ scale: 1.05 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ 
+                    delay: 1.2,
+                    duration: 0.8,
+                    ease: "easeInOut"
+                  }}
+                  whileHover={{ 
+                    scale: 1.05,
+                    backgroundColor: "rgba(96, 165, 250, 0.1)"
+                  }}
                   whileTap={{ scale: 0.95 }}
                 >
                   Contact Us
@@ -89,25 +100,13 @@ const LandingPage = () => {
         </div>
 
         {/* Scroll Indicator */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-          animate={{
-            y: [0, 10, 0],
-          }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            repeatType: "reverse",
-          }}
-        >
-          <div className="w-6 h-10 border-2 border-blue-400 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-blue-400 rounded-full mt-2"></div>
-          </div>
-        </motion.div>
+        <div className="absolute bottom-8 left-0 right-0 flex justify-center">
+          <ScrollIndicator />
+        </div>
       </div>
 
       {/* Stats Section */}
-      <section className="py-20 bg-gray-800/50 backdrop-blur-lg">
+      <section className="relative py-20 bg-gray-800/50 backdrop-blur-lg overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (

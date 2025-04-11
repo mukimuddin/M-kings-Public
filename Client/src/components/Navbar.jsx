@@ -52,7 +52,7 @@ const Navbar = () => {
     setActiveDropdown(null);
   }, [location]);
 
-  // Add touch gesture handlers
+  // Modified touch gesture handlers
   useEffect(() => {
     if (!menuRef.current) return;
 
@@ -71,23 +71,12 @@ const Navbar = () => {
       const swipeDistance = touchEndX - touchStartX;
       
       if (Math.abs(swipeDistance) > 50) { // Minimum swipe distance
-        if (swipeDistance > 0) {
+        if (swipeDistance > 0 && isMenuOpen) {
           // Swipe right - close menu
-          controls.start({
-            x: '100%',
-            opacity: 0,
-            transition: { duration: 0.3 }
-          }).then(() => {
-            setIsMenuOpen(false);
-          });
-        } else {
+          setIsMenuOpen(false);
+        } else if (swipeDistance < 0 && !isMenuOpen) {
           // Swipe left - open menu
           setIsMenuOpen(true);
-          controls.start({
-            x: 0,
-            opacity: 1,
-            transition: { duration: 0.3 }
-          });
         }
       }
     };
@@ -102,7 +91,7 @@ const Navbar = () => {
       menuElement.removeEventListener('touchmove', handleTouchMove);
       menuElement.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [controls]);
+  }, [isMenuOpen]);
 
   const navItems = [
     { 
@@ -222,7 +211,7 @@ const Navbar = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute top-full left-0 mt-1 w-64 bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-700 overflow-hidden"
+                        className="absolute top-full left-0 mt-1 w-64 bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-xl border border-gray-700 z-50"
                       >
                         {item.dropdownItems.map((dropdownItem) => (
                           <Link
@@ -254,97 +243,82 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Navigation */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              ref={menuRef}
-              initial={{ opacity: 0, x: '100%' }}
-              animate={controls}
-              exit={{ opacity: 0, x: '100%' }}
-              transition={{ duration: 0.3 }}
-              className="md:hidden bg-gray-800 border-t border-gray-700"
-            >
-              <div className="container mx-auto px-4 py-4">
-                {navItems.map((item) => (
-                  <div key={item.name}>
-                    <motion.div
-                      className="flex items-center justify-between py-3 text-gray-300"
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => item.dropdownItems && setActiveDropdown(activeDropdown === item.name ? null : item.name)}
-                    >
-                      <Link
-                        to={item.path}
-                        className={`hover:text-white transition-colors ${
-                          location.pathname === item.path ? 'text-blue-400' : ''
-                        }`}
-                        onClick={handleNavClick}
+        <div 
+          ref={menuRef}
+          className="md:hidden"
+        >
+          <AnimatePresence>
+            {isMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, x: '100%' }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: '100%' }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="fixed top-[64px] right-0 w-full h-[calc(100vh-64px)] bg-gray-900/95 backdrop-blur-sm border-t border-gray-700 overflow-hidden"
+              >
+                <div className="container mx-auto h-full px-4 py-4 overflow-y-auto overflow-hidden">
+                  {navItems.map((item) => (
+                    <div key={item.name}>
+                      <motion.div
+                        className="flex items-center justify-between py-3 text-gray-300"
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => item.dropdownItems && setActiveDropdown(activeDropdown === item.name ? null : item.name)}
                       >
-                        {item.name}
-                      </Link>
-                      {item.dropdownItems && (
-                        <motion.div
-                          animate={{ rotate: activeDropdown === item.name ? 180 : 0 }}
-                          transition={{ duration: 0.2 }}
+                        <Link
+                          to={item.path}
+                          className={`hover:text-white transition-colors ${
+                            location.pathname === item.path ? 'text-blue-400' : ''
+                          }`}
+                          onClick={handleNavClick}
                         >
-                          <ChevronDown size={16} />
-                        </motion.div>
-                      )}
-                    </motion.div>
+                          {item.name}
+                        </Link>
+                        {item.dropdownItems && (
+                          <motion.div
+                            animate={{ rotate: activeDropdown === item.name ? 180 : 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <ChevronDown size={16} />
+                          </motion.div>
+                        )}
+                      </motion.div>
 
-                    {/* Mobile Dropdown */}
-                    <AnimatePresence>
-                      {item.dropdownItems && activeDropdown === item.name && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="pl-4 border-l border-gray-700 ml-4"
-                        >
-                          {item.dropdownItems.map((dropdownItem) => (
-                            <motion.div
-                              key={dropdownItem.name}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              <Link
-                                to={dropdownItem.path}
-                                className={`block py-2 text-gray-400 hover:text-white transition-colors ${
-                                  location.pathname === dropdownItem.path ? 'text-blue-400' : ''
-                                }`}
-                                onClick={handleNavClick}
+                      {/* Mobile Dropdown */}
+                      <AnimatePresence>
+                        {item.dropdownItems && activeDropdown === item.name && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="pl-4 border-l border-gray-700 ml-4"
+                          >
+                            {item.dropdownItems.map((dropdownItem) => (
+                              <motion.div
+                                key={dropdownItem.name}
+                                whileTap={{ scale: 0.95 }}
                               >
-                                {dropdownItem.name}
-                              </Link>
-                            </motion.div>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                ))}
-
-                {/* Mobile Quick Contacts */}
-                <motion.div 
-                  className="mt-6 pt-6 border-t border-gray-700"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  {quickContacts.map((contact, index) => (
-                    <motion.div 
-                      key={index} 
-                      className="flex items-center space-x-2 text-gray-400 py-2"
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {contact.icon}
-                      <span>{contact.text}</span>
-                    </motion.div>
+                                <Link
+                                  to={dropdownItem.path}
+                                  className={`block py-2 text-gray-400 hover:text-white transition-colors ${
+                                    location.pathname === dropdownItem.path ? 'text-blue-400' : ''
+                                  }`}
+                                  onClick={handleNavClick}
+                                >
+                                  {dropdownItem.name}
+                                </Link>
+                              </motion.div>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   ))}
-                </motion.div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </motion.nav>
     </div>
   );

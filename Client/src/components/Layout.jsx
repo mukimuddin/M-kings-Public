@@ -5,7 +5,6 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import Loading from './Loading';
 import ScrollToTop from './ScrollToTop';
-import ScrollToTopButton from './ScrollToTopButton';
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -26,24 +25,25 @@ const Layout = ({ children }) => {
   };
 
   return (
-    <div className="App bg-gray-900">
+    <div className="relative min-h-screen bg-gray-900">
       <Navbar />
-      <AnimatePresence mode="wait">
-        <Suspense fallback={<Loading />}>
-          <motion.main
-            key={location.pathname}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            variants={pageVariants}
-            transition={{ duration: 0.2 }}
-          >
-            {children}
-          </motion.main>
-        </Suspense>
-      </AnimatePresence>
+      <div className="w-full overflow-x-hidden">
+        <AnimatePresence mode="wait">
+          <Suspense fallback={<Loading />}>
+            <motion.main
+              key={location.pathname}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={pageVariants}
+              transition={{ duration: 0.2 }}
+            >
+              {children}
+            </motion.main>
+          </Suspense>
+        </AnimatePresence>
+      </div>
       <ScrollToTop />
-      <ScrollToTopButton />
       <Footer />
     </div>
   );

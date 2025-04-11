@@ -1,7 +1,11 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import AOS from 'aos';
 import Layout from './components/Layout';
 import Loading from './components/Loading';
+import 'react-toastify/dist/ReactToastify.css';
+import 'aos/dist/aos.css';
 
 // Lazy load all pages with a minimum delay to ensure loading is visible
 const LandingPage = lazy(() => {
@@ -27,8 +31,29 @@ const ServiceDetail = lazy(() => import('./pages/ServiceDetail'));
 const Team = lazy(() => import('./pages/Team'));
 const TeamMember = lazy(() => import('./pages/TeamMember'));
 const Contact = lazy(() => import('./pages/Contact'));
+const FeatureShowcase = lazy(() => import('./components/FeatureShowcase'));
 
 function App() {
+  useEffect(() => {
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-in-out'
+    });
+
+    // Demo toast - you can remove this later
+    toast.info('Welcome to M Kings! 👑', {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  }, []);
+
   return (
     <Router>
       <Layout>
@@ -44,7 +69,20 @@ function App() {
           <Route path="/team" element={<Team />} />
           <Route path="/team/:id" element={<TeamMember />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/showcase" element={<FeatureShowcase />} />
         </Routes>
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="dark"
+        />
       </Layout>
     </Router>
   );
