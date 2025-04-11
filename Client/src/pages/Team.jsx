@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Linkedin, Twitter, Mail } from 'lucide-react';
+import ScrollReveal from '../components/ScrollReveal';
+import TiltCard from '../components/TiltCard';
 
 const Team = () => {
   const teamMembers = [
@@ -58,74 +60,62 @@ const Team = () => {
   return (
     <section className="bg-gray-900 py-24">
       <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl font-bold text-white mb-6">Our Team</h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Meet the talented individuals who make our vision a reality through innovation,
-            dedication, and expertise.
-          </p>
-        </motion.div>
+        <ScrollReveal>
+          <motion.div
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl font-bold text-white mb-6">Our Team</h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Meet the talented individuals who make our vision a reality through innovation,
+              dedication, and expertise.
+            </p>
+          </motion.div>
+        </ScrollReveal>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {teamMembers.map((member, index) => (
-            <motion.div
-              key={member.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
-              className="bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm border border-gray-700 group"
-            >
+            <ScrollReveal key={member.id} delay={0.1 * (index + 1)}>
               <Link to={`/team/${member.id}`}>
-                <div className="relative mb-6 overflow-hidden rounded-xl">
-                  <div className="aspect-square">
-                    <img
-                      src={member.image}
-                      alt={member.name}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                    />
+                <TiltCard>
+                  <div className="bg-gray-800/50 rounded-xl overflow-hidden border border-gray-700 group">
+                    <div className="relative">
+                      <motion.img
+                        src={member.image}
+                        alt={member.name}
+                        className="w-full aspect-square object-cover"
+                        whileHover={{ scale: 1.1 }}
+                        transition={{ duration: 0.3 }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </div>
+                    <div className="p-6">
+                      <h3 className="text-xl font-semibold text-white mb-1 group-hover:text-blue-400 transition-colors">
+                        {member.name}
+                      </h3>
+                      <p className="text-blue-400 mb-3">{member.role}</p>
+                      <p className="text-gray-400 text-sm mb-4">
+                        {member.description}
+                      </p>
+                      <div className="flex space-x-4">
+                        {Object.entries(member.social).map(([platform, link]) => (
+                          <motion.a
+                            key={platform}
+                            href={link}
+                            className="text-gray-400 hover:text-blue-400 transition-colors"
+                            whileHover={{ scale: 1.2 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            {platform === 'linkedin' && <Linkedin size={20} />}
+                            {platform === 'twitter' && <Twitter size={20} />}
+                            {platform === 'email' && <Mail size={20} />}
+                          </motion.a>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-0 group-hover:opacity-60 transition-opacity duration-300" />
-                </div>
-
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
-                  {member.name}
-                </h3>
-                <p className="text-blue-400 font-medium mb-3">{member.role}</p>
-                <p className="text-gray-300 text-sm mb-4">{member.description}</p>
+                </TiltCard>
               </Link>
-
-              <div className="flex justify-center space-x-4">
-                <motion.a
-                  href={member.social.linkedin}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="text-gray-400 hover:text-blue-400 transition-colors"
-                >
-                  <Linkedin size={20} />
-                </motion.a>
-                <motion.a
-                  href={member.social.twitter}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="text-gray-400 hover:text-blue-400 transition-colors"
-                >
-                  <Twitter size={20} />
-                </motion.a>
-                <motion.a
-                  href={`mailto:${member.social.email}`}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="text-gray-400 hover:text-blue-400 transition-colors"
-                >
-                  <Mail size={20} />
-                </motion.a>
-              </div>
-            </motion.div>
+            </ScrollReveal>
           ))}
         </div>
       </div>

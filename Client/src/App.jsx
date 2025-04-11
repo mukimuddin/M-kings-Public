@@ -1,10 +1,23 @@
-import React, { lazy } from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
+import Loading from './components/Loading';
 
-// Lazy load all pages
-const LandingPage = lazy(() => import('./pages/LandingPage'));
-const About = lazy(() => import('./pages/About'));
+// Lazy load all pages with a minimum delay to ensure loading is visible
+const LandingPage = lazy(() => {
+  return Promise.all([
+    import('./pages/LandingPage'),
+    new Promise(resolve => setTimeout(resolve, 300))
+  ]).then(([moduleExports]) => moduleExports);
+});
+
+const About = lazy(() => {
+  return Promise.all([
+    import('./pages/About'),
+    new Promise(resolve => setTimeout(resolve, 300))
+  ]).then(([moduleExports]) => moduleExports);
+});
+
 const OurStory = lazy(() => import('./pages/OurStory'));
 const CoreValues = lazy(() => import('./pages/CoreValues'));
 const MissionVision = lazy(() => import('./pages/MissionVision'));
