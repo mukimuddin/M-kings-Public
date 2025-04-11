@@ -3,10 +3,18 @@ import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 
 const Contact = () => {
+  const fixedLocation = {
+    address: "Gazipura, Tongi, Gazipur District, Dhaka Division, 1712, Bangladesh",
+    coordinates: {
+      lat: 23.917429,
+      lng: 90.400159
+    }
+  };
+
   const contactInfo = [
     { icon: <Mail size={24} />, text: 'contact@mkingsgroup.com', label: 'Email' },
     { icon: <Phone size={24} />, text: '+1 (555) 123-4567', label: 'Phone' },
-    { icon: <MapPin size={24} />, text: 'New York, NY 10001', label: 'Address' },
+    { icon: <MapPin size={24} />, text: fixedLocation.address, label: 'Location' },
   ];
 
   return (
@@ -98,19 +106,39 @@ const Contact = () => {
               ))}
             </div>
 
-            {/* Map */}
+            {/* Location Card */}
             <motion.div
-              className="mt-12 bg-gray-800 p-4 rounded-lg"
+              className="mt-12 bg-gray-800 p-6 rounded-lg"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
             >
-              <iframe
-                title="location"
-                className="w-full h-64 rounded-lg"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d193595.25436351647!2d-74.11976404950463!3d40.69767006792137!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2s!4v1645564650836!5m2!1sen!2s"
-                loading="lazy"
-              ></iframe>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <MapPin className="w-6 h-6 text-blue-400" />
+                  <h3 className="text-xl font-semibold text-white">Our Location</h3>
+                </div>
+                <p className="text-gray-300">{fixedLocation.address}</p>
+                <div className="text-sm text-gray-400">
+                  Coordinates: {fixedLocation.coordinates.lat}, {fixedLocation.coordinates.lng}
+                </div>
+                <div className="mt-4 bg-gray-700/50 rounded-lg overflow-hidden">
+                  <iframe
+                    title="location"
+                    className="w-full h-64 rounded-lg"
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${fixedLocation.coordinates.lng-0.01}%2C${fixedLocation.coordinates.lat-0.01}%2C${fixedLocation.coordinates.lng+0.01}%2C${fixedLocation.coordinates.lat+0.01}&layer=mapnik&marker=${fixedLocation.coordinates.lat}%2C${fixedLocation.coordinates.lng}`}
+                    style={{ border: 0 }}
+                  ></iframe>
+                </div>
+                <a 
+                  href={`https://www.openstreetmap.org/?mlat=${fixedLocation.coordinates.lat}&mlon=${fixedLocation.coordinates.lng}#map=15/${fixedLocation.coordinates.lat}/${fixedLocation.coordinates.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block mt-2 text-blue-400 hover:text-blue-300 transition-colors text-sm"
+                >
+                  View Larger Map
+                </a>
+              </div>
             </motion.div>
           </motion.div>
         </div>
