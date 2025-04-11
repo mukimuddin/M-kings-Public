@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { Menu, X, ChevronDown, Phone, Mail, MapPin } from 'lucide-react';
 
 const Navbar = () => {
@@ -8,6 +8,8 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const location = useLocation();
+  const menuRef = useRef(null);
+  const controls = useAnimation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,6 +51,58 @@ const Navbar = () => {
     setIsMenuOpen(false);
     setActiveDropdown(null);
   }, [location]);
+
+  // Add touch gesture handlers
+  useEffect(() => {
+    if (!menuRef.current) return;
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    const handleTouchStart = (e) => {
+      touchStartX = e.touches[0].clientX;
+    };
+
+    const handleTouchMove = (e) => {
+      touchEndX = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = () => {
+      const swipeDistance = touchEndX - touchStartX;
+      
+      if (Math.abs(swipeDistance) > 50) { // Minimum swipe distance
+        if (swipeDistance > 0) {
+          // Swipe right - close menu
+          controls.start({
+            x: '100%',
+            opacity: 0,
+            transition: { duration: 0.3 }
+          }).then(() => {
+            setIsMenuOpen(false);
+          });
+        } else {
+          // Swipe left - open menu
+          setIsMenuOpen(true);
+          controls.start({
+            x: 0,
+            opacity: 1,
+            transition: { duration: 0.3 }
+          });
+        }
+      }
+    };
+
+    const menuElement = menuRef.current;
+    menuElement.addEventListener('touchstart', handleTouchStart);
+    menuElement.addEventListener('touchmove', handleTouchMove);
+    menuElement.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      menuElement.removeEventListener('touchstart', handleTouchStart);
+      menuElement.removeEventListener('touchmove', handleTouchMove);
+      menuElement.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [controls]);
 
   const navItems = [
     { 
@@ -203,17 +257,19 @@ const Navbar = () => {
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
+              ref={menuRef}
+              initial={{ opacity: 0, x: '100%' }}
+              animate={controls}
+              exit={{ opacity: 0, x: '100%' }}
               transition={{ duration: 0.3 }}
               className="md:hidden bg-gray-800 border-t border-gray-700"
             >
               <div className="container mx-auto px-4 py-4">
                 {navItems.map((item) => (
                   <div key={item.name}>
-                    <div
+                    <motion.div
                       className="flex items-center justify-between py-3 text-gray-300"
+                      whileTap={{ scale: 0.95 }}
                       onClick={() => item.dropdownItems && setActiveDropdown(activeDropdown === item.name ? null : item.name)}
                     >
                       <Link
@@ -226,14 +282,14 @@ const Navbar = () => {
                         {item.name}
                       </Link>
                       {item.dropdownItems && (
-                        <ChevronDown
-                          size={16}
-                          className={`transform transition-transform ${
-                            activeDropdown === item.name ? 'rotate-180' : ''
-                          }`}
-                        />
+                        <motion.div
+                          animate={{ rotate: activeDropdown === item.name ? 180 : 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <ChevronDown size={16} />
+                        </motion.div>
                       )}
-                    </div>
+                    </motion.div>
 
                     {/* Mobile Dropdown */}
                     <AnimatePresence>
@@ -246,16 +302,20 @@ const Navbar = () => {
                           className="pl-4 border-l border-gray-700 ml-4"
                         >
                           {item.dropdownItems.map((dropdownItem) => (
-                            <Link
+                            <motion.div
                               key={dropdownItem.name}
-                              to={dropdownItem.path}
-                              className={`block py-2 text-gray-400 hover:text-white transition-colors ${
-                                location.pathname === dropdownItem.path ? 'text-blue-400' : ''
-                              }`}
-                              onClick={handleNavClick}
+                              whileTap={{ scale: 0.95 }}
                             >
-                              {dropdownItem.name}
-                            </Link>
+                              <Link
+                                to={dropdownItem.path}
+                                className={`block py-2 text-gray-400 hover:text-white transition-colors ${
+                                  location.pathname === dropdownItem.path ? 'text-blue-400' : ''
+                                }`}
+                                onClick={handleNavClick}
+                              >
+                                {dropdownItem.name}
+                              </Link>
+                            </motion.div>
                           ))}
                         </motion.div>
                       )}
@@ -264,14 +324,23 @@ const Navbar = () => {
                 ))}
 
                 {/* Mobile Quick Contacts */}
-                <div className="mt-6 pt-6 border-t border-gray-700">
+                <motion.div 
+                  className="mt-6 pt-6 border-t border-gray-700"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
                   {quickContacts.map((contact, index) => (
-                    <div key={index} className="flex items-center space-x-2 text-gray-400 py-2">
+                    <motion.div 
+                      key={index} 
+                      className="flex items-center space-x-2 text-gray-400 py-2"
+                      whileTap={{ scale: 0.95 }}
+                    >
                       {contact.icon}
                       <span>{contact.text}</span>
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               </div>
             </motion.div>
           )}

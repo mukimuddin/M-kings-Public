@@ -1,8 +1,18 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react';
 
 const Contact = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [activeField, setActiveField] = useState(null);
+
   const fixedLocation = {
     address: "Gazipura, Tongi, Gazipur District, Dhaka Division, 1712, Bangladesh",
     coordinates: {
@@ -17,128 +27,243 @@ const Contact = () => {
     { icon: <MapPin size={24} />, text: fixedLocation.address, label: 'Location' },
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 10
+      }
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    // Simulate form submission
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    setIsSubmitting(false);
+    setIsSubmitted(true);
+    
+    // Reset form after 3 seconds
+    setTimeout(() => {
+      setIsSubmitted(false);
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: ''
+      });
+    }, 3000);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 py-20">
       <div className="container mx-auto px-4">
-        <motion.h1
-          className="text-4xl font-bold text-white text-center mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="text-center mb-12"
         >
-          Contact Us
-        </motion.h1>
+          <motion.h1
+            variants={itemVariants}
+            className="text-4xl font-bold text-white mb-4"
+          >
+            Contact Us
+          </motion.h1>
+          <motion.p
+            variants={itemVariants}
+            className="text-xl text-gray-300 max-w-2xl mx-auto"
+          >
+            Get in touch with us. We're here to help and answer any questions you might have.
+          </motion.p>
+        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Contact Form */}
           <motion.div
-            className="bg-gray-800 p-8 rounded-lg shadow-lg"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="bg-gray-800/50 p-8 rounded-xl shadow-lg backdrop-blur-sm border border-gray-700"
           >
-            <h2 className="text-2xl font-bold text-white mb-6">Send us a Message</h2>
-            <form className="space-y-6">
-              <div>
-                <label className="block text-gray-300 mb-2" htmlFor="name">Name</label>
-                <input
-                  type="text"
-                  id="name"
-                  className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Your Name"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-300 mb-2" htmlFor="email">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="your@email.com"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-300 mb-2" htmlFor="message">Message</label>
-                <textarea
-                  id="message"
-                  rows="4"
-                  className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Your message..."
-                ></textarea>
-              </div>
-              <motion.button
-                type="submit"
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Send Message
-                <Send size={20} />
-              </motion.button>
-            </form>
+            <AnimatePresence mode="wait">
+              {isSubmitted ? (
+                <motion.div
+                  key="success"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="text-center py-8"
+                >
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="inline-block mb-4"
+                  >
+                    <CheckCircle2 size={64} className="text-green-400" />
+                  </motion.div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Message Sent!</h3>
+                  <p className="text-gray-300">Thank you for contacting us. We'll get back to you soon.</p>
+                </motion.div>
+              ) : (
+                <motion.form
+                  key="form"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onSubmit={handleSubmit}
+                  className="space-y-6"
+                >
+                  {[
+                    { name: 'name', label: 'Name', type: 'text' },
+                    { name: 'email', label: 'Email', type: 'email' },
+                    { name: 'subject', label: 'Subject', type: 'text' },
+                    { name: 'message', label: 'Message', type: 'textarea' }
+                  ].map((field) => (
+                    <motion.div
+                      key={field.name}
+                      variants={itemVariants}
+                      className="relative"
+                    >
+                      <label
+                        className={`absolute left-4 transition-all duration-200 ${
+                          activeField === field.name || formData[field.name]
+                            ? '-top-3 text-sm text-blue-400'
+                            : 'top-3 text-gray-400'
+                        }`}
+                      >
+                        {field.label}
+                      </label>
+                      {field.type === 'textarea' ? (
+                        <textarea
+                          name={field.name}
+                          value={formData[field.name]}
+                          onChange={handleInputChange}
+                          onFocus={() => setActiveField(field.name)}
+                          onBlur={() => setActiveField(null)}
+                          className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                          rows="4"
+                          required
+                        />
+                      ) : (
+                        <input
+                          type={field.type}
+                          name={field.name}
+                          value={formData[field.name]}
+                          onChange={handleInputChange}
+                          onFocus={() => setActiveField(field.name)}
+                          onBlur={() => setActiveField(null)}
+                          className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                          required
+                        />
+                      )}
+                    </motion.div>
+                  ))}
+                  <motion.button
+                    type="submit"
+                    className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                        />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        Send Message
+                        <Send size={20} />
+                      </>
+                    )}
+                  </motion.button>
+                </motion.form>
+              )}
+            </AnimatePresence>
           </motion.div>
 
           {/* Contact Information */}
           <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
             className="lg:pl-12"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
           >
-            <h2 className="text-2xl font-bold text-white mb-8">Get in Touch</h2>
+            <motion.h2
+              variants={itemVariants}
+              className="text-2xl font-bold text-white mb-8"
+            >
+              Get in Touch
+            </motion.h2>
             <div className="space-y-8">
               {contactInfo.map((item, index) => (
                 <motion.div
                   key={index}
-                  className="flex items-start space-x-4"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.2 }}
+                  variants={itemVariants}
+                  className="flex items-start space-x-4 group"
+                  whileHover={{ x: 5 }}
                 >
-                  <div className="bg-gray-800 p-3 rounded-lg text-blue-400">
+                  <motion.div
+                    className="bg-gray-800 p-3 rounded-lg text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                  >
                     {item.icon}
-                  </div>
+                  </motion.div>
                   <div>
-                    <h3 className="text-gray-300 font-semibold mb-1">{item.label}</h3>
+                    <h3 className="text-gray-300 font-semibold mb-1 group-hover:text-white transition-colors">
+                      {item.label}
+                    </h3>
                     <p className="text-white">{item.text}</p>
                   </div>
                 </motion.div>
               ))}
             </div>
 
-            {/* Location Card */}
+            {/* Map Section */}
             <motion.div
-              className="mt-12 bg-gray-800 p-6 rounded-lg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
+              variants={itemVariants}
+              className="mt-12 bg-gray-800/50 p-4 rounded-xl border border-gray-700"
             >
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <MapPin className="w-6 h-6 text-blue-400" />
-                  <h3 className="text-xl font-semibold text-white">Our Location</h3>
-                </div>
-                <p className="text-gray-300">{fixedLocation.address}</p>
-                <div className="text-sm text-gray-400">
-                  Coordinates: {fixedLocation.coordinates.lat}, {fixedLocation.coordinates.lng}
-                </div>
-                <div className="mt-4 bg-gray-700/50 rounded-lg overflow-hidden">
-                  <iframe
-                    title="location"
-                    className="w-full h-64 rounded-lg"
-                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${fixedLocation.coordinates.lng-0.01}%2C${fixedLocation.coordinates.lat-0.01}%2C${fixedLocation.coordinates.lng+0.01}%2C${fixedLocation.coordinates.lat+0.01}&layer=mapnik&marker=${fixedLocation.coordinates.lat}%2C${fixedLocation.coordinates.lng}`}
-                    style={{ border: 0 }}
-                  ></iframe>
-                </div>
-                <a 
-                  href={`https://www.openstreetmap.org/?mlat=${fixedLocation.coordinates.lat}&mlon=${fixedLocation.coordinates.lng}#map=15/${fixedLocation.coordinates.lat}/${fixedLocation.coordinates.lng}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block mt-2 text-blue-400 hover:text-blue-300 transition-colors text-sm"
-                >
-                  View Larger Map
-                </a>
-              </div>
+              <iframe
+                src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3650.0!2d${fixedLocation.coordinates.lng}!3d${fixedLocation.coordinates.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDU1JzAyLjciTiA5MMKwMjQnMDAuNiJF!5e0!3m2!1sen!2sus!4v1630000000000!5m2!1sen!2sus`}
+                width="100%"
+                height="300"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                className="rounded-lg"
+              />
             </motion.div>
           </motion.div>
         </div>
