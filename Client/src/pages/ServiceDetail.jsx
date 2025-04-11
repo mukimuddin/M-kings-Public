@@ -338,38 +338,49 @@ const ServiceDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 pt-24 pb-16">
-      <div className="container mx-auto px-4">
-        <Link 
+    <div className="min-h-screen bg-gray-900">
+      {/* Back Button */}
+      <div className="container mx-auto px-4 py-6">
+        <Link
           to="/services"
-          className="inline-flex items-center text-blue-400 hover:text-blue-300 mb-8 group"
+          className="inline-flex items-center text-gray-400 hover:text-white transition-colors"
         >
-          <ArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" size={20} />
+          <ArrowLeft className="w-5 h-5 mr-2" />
           Back to Services
         </Link>
+      </div>
 
-        {/* Hero Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="relative rounded-2xl overflow-hidden mb-12"
-        >
-          <div className="aspect-[21/9] w-full">
-            <img 
-              src={service.image} 
-              alt={service.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent">
-            <div className="absolute bottom-0 left-0 p-8">
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{service.title}</h1>
-              <p className="text-xl text-gray-300 max-w-2xl">{service.description}</p>
-            </div>
-          </div>
-        </motion.div>
+      {/* Banner Section */}
+      <div className="relative bg-gray-800 overflow-hidden">
+        <div className="absolute inset-0">
+          <img
+            src={service.image}
+            alt={service.title}
+            className="w-full h-full object-cover opacity-20"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/95 to-gray-900/70"></div>
+        </div>
+        <div className="relative container mx-auto px-4 py-16 md:py-24">
+          <motion.h1
+            className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 break-words"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            {service.title}
+          </motion.h1>
+          <motion.p
+            className="text-xl text-gray-300 max-w-2xl"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            {service.description}
+          </motion.p>
+        </div>
+      </div>
 
+      <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <motion.div
