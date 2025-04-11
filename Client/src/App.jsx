@@ -11,6 +11,9 @@ import Team from './pages/Team';
 import TeamMember from './pages/TeamMember';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
+import CoreValues from './pages/CoreValues';
+import MissionVision from './pages/MissionVision';
+import OurStory from './pages/OurStory';
 
 function App() {
   return (
@@ -22,6 +25,9 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/about" element={<About />} />
+            <Route path="/about/our-story" element={<OurStory />} />
+            <Route path="/about/core-values" element={<CoreValues />} />
+            <Route path="/about/mission-vision" element={<MissionVision />} />
             <Route path="/about/:id" element={<AboutCardDetail />} />
             <Route path="/services" element={<Services />} />
             <Route path="/services/:id" element={<ServiceDetail />} />
