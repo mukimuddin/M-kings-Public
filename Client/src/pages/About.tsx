@@ -1,7 +1,8 @@
 import React from 'react';
 import { useSpring, animated } from '@react-spring/web';
 
-const About: React.FC = () => {
+// Custom hook for animations
+const useAnimations = (count: number, delay: number = 200) => {
   const fadeIn = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
@@ -10,26 +11,23 @@ const About: React.FC = () => {
   const slideUp = useSpring({
     from: { transform: 'translateY(20px)', opacity: 0 },
     to: { transform: 'translateY(0)', opacity: 1 },
-    delay: 200,
+    delay: delay,
   });
 
-  // Create animations for team members
-  const teamAnimations = Array(6).fill(null).map((_, index) => 
+  const animations = Array(count).fill(null).map((_, index) => 
     useSpring({
       from: { opacity: 0, transform: 'translateY(20px)' },
       to: { opacity: 1, transform: 'translateY(0)' },
-      delay: 200 * index,
+      delay: delay * index,
     })
   );
 
-  // Create animations for values
-  const valuesAnimations = Array(3).fill(null).map((_, index) =>
-    useSpring({
-      from: { opacity: 0, transform: 'translateY(20px)' },
-      to: { opacity: 1, transform: 'translateY(0)' },
-      delay: 200 * index,
-    })
-  );
+  return { fadeIn, slideUp, animations };
+};
+
+const About: React.FC = () => {
+  const { fadeIn, slideUp, animations: teamAnimations } = useAnimations(6);
+  const { animations: valuesAnimations } = useAnimations(3);
 
   return (
     <div className="space-y-16">

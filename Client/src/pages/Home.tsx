@@ -2,27 +2,33 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useSpring, animated } from '@react-spring/web';
 
-const Home: React.FC = () => {
+// Custom hook for animations
+const useAnimations = (count: number, delay: number = 200) => {
   const fadeIn = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
-    delay: 200,
+    delay: delay,
   });
 
   const slideUp = useSpring({
     from: { transform: 'translateY(20px)', opacity: 0 },
     to: { transform: 'translateY(0)', opacity: 1 },
-    delay: 400,
+    delay: delay * 2,
   });
 
-  // Create animations for features
-  const featureAnimations = Array(6).fill(null).map((_, index) =>
+  const animations = Array(count).fill(null).map((_, index) =>
     useSpring({
       from: { opacity: 0, transform: 'translateY(20px)' },
       to: { opacity: 1, transform: 'translateY(0)' },
-      delay: 200 * index,
+      delay: delay * index,
     })
   );
+
+  return { fadeIn, slideUp, animations };
+};
+
+const Home: React.FC = () => {
+  const { fadeIn, slideUp, animations: featureAnimations } = useAnimations(6);
 
   return (
     <div className="space-y-16">
