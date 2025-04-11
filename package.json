@@ -1,0 +1,14 @@
+{
+  "name": "m-kings",
+  "version": "1.0.0",
+  "description": "M Kings Next-Generation Website",
+  "scripts": {
+    "install:all": "npm install && cd Server && npm install && cd ../Client && npm install",
+    "server": "cd Server && npm run dev",
+    "client": "cd Client && npm start",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+} 
