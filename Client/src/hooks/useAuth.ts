@@ -1,18 +1,17 @@
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
+import { socketService } from '../services/socket';
 import {
   login,
-  loginSuccess,
-  loginFailure,
   signup,
-  signupSuccess,
-  signupFailure,
   logout,
   setError,
+  verifyEmail,
+  forgotPassword,
+  resetPassword,
 } from '../store/slices/authSlice';
 import authAPI from '../services/authAPI';
-import { socketService } from '../services/socket';
 
 export const useAuth = () => {
   const dispatch = useDispatch();
@@ -24,7 +23,6 @@ export const useAuth = () => {
       socketService.connect();
     } catch (error: any) {
       dispatch(setError(error.message));
-      throw error;
     }
   }, [dispatch]);
 
@@ -34,16 +32,47 @@ export const useAuth = () => {
       socketService.connect();
     } catch (error: any) {
       dispatch(setError(error.message));
-      throw error;
     }
   }, [dispatch]);
 
   const handleLogout = useCallback(() => {
-    socketService.disconnect();
     dispatch(logout());
+    socketService.disconnect();
   }, [dispatch]);
 
-  const handleVerifyEmail = async (token: string) => {
+  const handleVerifyEmail = useCallback(async (token: string) => {
+    try {
+      await dispatch(verifyEmail(token)).unwrap();
+    } catch (error: any) {
+      dispatch(setError(error.message));
+    }
+  }, [dispatch]);
+
+  const handleForgotPassword = useCallback(async (email: string) => {
+    try {
+      await dispatch(forgotPassword(email)).unwrap();
+    } catch (error: any) {
+      dispatch(setError(error.message));
+    }
+  }, [dispatch]);
+
+  const handleResetPassword = useCallback(async (token: string, password: string) => {
+    try {
+      await dispatch(resetPassword({ token, password })).unwrap();
+    } catch (error: any) {
+      dispatch(setError(error.message));
+    }
+  }, [dispatch]);
+
+  const clearError = useCallback(() => {
+    dispatch(setError(null));
+  }, [dispatch]);
+
+  const handleClearError = useCallback(() => {
+    dispatch(clearError());
+  }, [dispatch]);
+
+  const handleVerifyEmailAPI = async (token: string) => {
     try {
       const response = await authAPI.verifyEmail(token);
       return response;
@@ -53,7 +82,7 @@ export const useAuth = () => {
     }
   };
 
-  const handleForgotPassword = async (email: string) => {
+  const handleForgotPasswordAPI = async (email: string) => {
     try {
       const response = await authAPI.forgotPassword(email);
       return response;
@@ -63,7 +92,7 @@ export const useAuth = () => {
     }
   };
 
-  const handleResetPassword = async (token: string, password: string) => {
+  const handleResetPasswordAPI = async (token: string, password: string) => {
     try {
       const response = await authAPI.resetPassword(token, password);
       return response;
@@ -72,10 +101,6 @@ export const useAuth = () => {
       throw err;
     }
   };
-
-  const clearError = useCallback(() => {
-    dispatch(setError(null));
-  }, [dispatch]);
 
   return {
     user,
@@ -88,7 +113,9 @@ export const useAuth = () => {
     verifyEmail: handleVerifyEmail,
     forgotPassword: handleForgotPassword,
     resetPassword: handleResetPassword,
-    clearError,
-    isAuthenticated: !!token,
+    clearError: handleClearError,
+    verifyEmailAPI: handleVerifyEmailAPI,
+    forgotPasswordAPI: handleForgotPasswordAPI,
+    resetPasswordAPI: handleResetPasswordAPI,
   };
 }; 

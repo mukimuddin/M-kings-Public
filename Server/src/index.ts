@@ -2,8 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { createServer } from 'http';
 import mongoose from 'mongoose';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
@@ -26,25 +26,25 @@ const httpServer = createServer(app);
 // Socket.io setup
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.SOCKET_CORS_ORIGIN,
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
     methods: ['GET', 'POST'],
-    credentials: true
-  }
+  },
 });
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: Number(process.env.RATE_LIMIT_WINDOW) * 60 * 1000,
-  max: Number(process.env.RATE_LIMIT_MAX)
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
 });
 
 // Middleware
-app.use(cors({
-  origin: process.env.CLIENT_URL,
-  credentials: true
-}));
+app.use(cors());
 app.use(helmet());
-app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
+app.use(morgan('combined', { 
+  stream: { 
+    write: (message: string) => logger.info(message.trim()) 
+  } 
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(limiter);
@@ -62,12 +62,12 @@ app.use(errorHandler);
 io.on('connection', (socket) => {
   logger.info(`User connected: ${socket.id}`);
 
-  socket.on('join_room', (roomId) => {
+  socket.on('join_room', (roomId: string) => {
     socket.join(roomId);
     logger.info(`User ${socket.id} joined room ${roomId}`);
   });
 
-  socket.on('leave_room', (roomId) => {
+  socket.on('leave_room', (roomId: string) => {
     socket.leave(roomId);
     logger.info(`User ${socket.id} left room ${roomId}`);
   });
@@ -82,17 +82,20 @@ io.on('connection', (socket) => {
 });
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI!)
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/m-kings';
+
+mongoose
+  .connect(MONGODB_URI)
   .then(() => {
-    logger.info('MongoDB Connected...');
-    
-    // Start server
+    logger.info('Connected to MongoDB');
     const PORT = process.env.PORT || 5000;
     httpServer.listen(PORT, () => {
-      logger.info(`Server running on port ${PORT}`);
+      logger.info(`Server is running on port ${PORT}`);
     });
   })
-  .catch((err) => {
+  .catch((err: Error) => {
     logger.error('MongoDB connection error:', err);
     process.exit(1);
-  }); 
+  });
+
+export default app; 

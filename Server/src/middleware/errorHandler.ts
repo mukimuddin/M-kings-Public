@@ -37,6 +37,20 @@ const handleJWTError = () => new AppError('Invalid token. Please log in again!',
 
 const handleJWTExpiredError = () => new AppError('Your token has expired! Please log in again.', 401);
 
+const handleMulterError = (err: any) => {
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return new AppError('File size is too large. Please upload a file smaller than 5MB', 400);
+  }
+  return new AppError('Error uploading file', 400);
+};
+
+const handleMongooseError = (err: any) => {
+  if (err.name === 'MongooseError') {
+    return new AppError('Database operation failed', 500);
+  }
+  return err;
+};
+
 const sendErrorDev = (err: AppError, res: Response) => {
   logger.error('ERROR 💥', err);
   res.status(err.statusCode).json({
@@ -48,15 +62,12 @@ const sendErrorDev = (err: AppError, res: Response) => {
 };
 
 const sendErrorProd = (err: AppError, res: Response) => {
-  // Operational, trusted error: send message to client
   if (err.isOperational) {
     res.status(err.statusCode).json({
       status: err.status,
       message: err.message
     });
-  } 
-  // Programming or other unknown error: don't leak error details
-  else {
+  } else {
     logger.error('ERROR 💥', err);
     res.status(500).json({
       status: 'error',
@@ -65,8 +76,7 @@ const sendErrorProd = (err: AppError, res: Response) => {
   }
 };
 
-export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
-  err.statusCode = err.statusCode || 500;
+export const errorHandler = (err: any, _req: Request, res: Response, _next: NextFunction) => {
   err.status = err.status || 'error';
 
   if (process.env.NODE_ENV === 'development') {
@@ -80,6 +90,8 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
     if (error.name === 'ValidationError') error = handleValidationErrorDB(error);
     if (error.name === 'JsonWebTokenError') error = handleJWTError();
     if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
+    if (error.name === 'MulterError') error = handleMulterError(error);
+    if (error.name === 'MongooseError') error = handleMongooseError(error);
 
     sendErrorProd(error, res);
   }
